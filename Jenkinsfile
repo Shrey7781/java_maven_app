@@ -1,4 +1,4 @@
-
+def gv
 
 pipeline {
     agent any
@@ -9,19 +9,14 @@ pipeline {
         stage("build jar") {
             steps {
                 script {
-                    echo "Building the application..."
-                    sh 'mvn package'
+                   gv.buildJar()
                 }
             }
         }
         stage("build image") {
             steps {
                 script {
-                    echo "building the docker image..."
-                    withCredentials([usernamePassword(credentialsId: 'docker-hub-repo', passwordVariable: 'PASS', usernameVariable: 'USER')]){
-                        sh 'docker build -t shrey7781/demo-app:jma-2.0 .'
-                        sh 'echo $PASS | docker login -u $USER --password-stdin'
-                        sh 'docker push shrey7781/demo-app:jma-2.0'
+                    gv.buildImage()
                     }
                 }
             }
@@ -29,7 +24,7 @@ pipeline {
         stage('deploy') {
             steps {
                 script {
-                    echo "Deploying the application..."
+                    gv.deployApp()
                 }
             }
         }
