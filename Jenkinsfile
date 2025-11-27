@@ -13,7 +13,7 @@ pipeline {
             steps {
                 script {
                     echo "Testing the application..."
-                    echo "Testing the integration..."
+                    
                    
                 }
             }
