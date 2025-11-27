@@ -8,7 +8,7 @@ pipeline {
                 script {
                     echo "testing the application..."
                     echo "Executing pipeline for branch $BRANCH_NAME"
-                    echo "------Testing the integration------"
+                    echo "Testing the integration"
                 }
             }
         }
