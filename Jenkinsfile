@@ -9,7 +9,7 @@ pipeline {
         stage('increment version') {
             steps {
                 script {
-                    echo 'Incrementing app version...'
+                    echo 'incrementing app version...'
                     sh 'mvn build-helper:parse-version versions:set \
                         -DnewVersion=\\\${parsedVersion.majorVersion}.\\\${parsedVersion.minorVersion}.\\\${parsedVersion.nextIncrementalVersion} \
                         versions:commit'
@@ -42,7 +42,7 @@ pipeline {
         stage('deploy') {
             steps {
                 script {
-                    echo 'Deploying Docker Image to EC2...'
+                    echo 'deploying docker dmage to EC2...'
                 }
             }
         }
