@@ -1,39 +1,31 @@
-def gv
+#!/usr/bin/env groovy
 
 pipeline {
     agent any
-    tools{
-        maven 'maven-3.9'
-    }
     stages {
-        stage("init"){
-            steps{
-                script{
-                    gv=load "script.groovy"
+        stage('test') {
+            steps {
+                script {
+                    echo "Testing the application..."
                 }
             }
         }
-        stage("build jar") {
+        stage('build') {
             steps {
                 script {
-                   gv.buildJar()
+                    echo "Building the application..."
                 }
             }
         }
-        stage("build image") {
-            steps {
-                script {
-                    gv.buildImage()
-                    }
-                }
-            }
-        
         stage('deploy') {
             steps {
                 script {
-                    gv.deployApp()
+                    def dockerCmd = 'docker run -p 3080:80 -d shrey7781/demo-app:1.0'
+                    sshagent(['ec2-user-key']) {
+                        sh "ssh -o StrictHostKeyChecking=no ec2-user@43.205.82.127 ${dockerCmd}"
+                    }
                 }
             }
-        }}
+        }
     }
-
+}
