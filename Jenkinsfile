@@ -25,6 +25,7 @@ pipeline {
     }
     steps {
         script {
+            sh 'which aws || echo "AWS CLI is missing!"'
             echo "Logging into EKS and Deploying..."
             // 1. Generate the kubeconfig so kubectl knows WHERE the cluster is
             sh 'aws eks update-kubeconfig --region $AWS_DEFAULT_REGION --name demo-cluster'
