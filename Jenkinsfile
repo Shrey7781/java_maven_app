@@ -15,7 +15,7 @@ pipeline {
     environment {
         DOCKER_REPO_SERVER = '699966192901.dkr.ecr.ap-south-1.amazonaws.com'
         IMAGE_NAME = 'java-maven-3.0'
-        DOCKER_REPO = '${DOCKER_REPO_SERVER}/java-maven-app'
+        DOCKER_REPO = "699966192901.dkr.ecr.ap-south-1.amazonaws.com/java-maven-app"
     }
     stages {
         stage('build app') {
@@ -26,33 +26,40 @@ pipeline {
                }
             }
         }
+        
         stage('build image') {
-            steps echo "building docker image..."
-                withCredentials([usernamePassword(
-                    credentialsId: 'ecr-credentials',
-                    usernameVariable: 'USER',
-                    passwordVariable: 'PASS'
-                )]) {
-                    sh """
-                    docker build -t ${DOCKER_REPO}:${IMAGE_NAME} .
-                    echo \$PASS | docker login -u \$USER --password-stdin ${DOCKER_REPO_SERVER}
-                    docker push ${DOCKER_REPO}:${IMAGE_NAME}
-                    """
+            steps {
+                script {
+                    echo "building docker image..."
+                    withCredentials([usernamePassword(
+                        credentialsId: 'ecr-credentials',
+                        usernameVariable: 'USER',
+                        passwordVariable: 'PASS'
+                    )]) {
+                        sh """
+                        docker build -t ${DOCKER_REPO}:${IMAGE_NAME} .
+                        echo \$PASS | docker login -u \$USER --password-stdin ${DOCKER_REPO_SERVER}
+                        docker push ${DOCKER_REPO}:${IMAGE_NAME}
+                        """
+                    }
                 }
+            }
         }
+
         stage('deploy') {
-    environment {
-        AWS_ACCESS_KEY_ID = credentials('jenkins-aws-access-key-id')
-        AWS_SECRET_ACCESS_KEY = credentials('jenkins-aws-secret-access-key')
-        AWS_DEFAULT_REGION = 'ap-south-1' 
-        APP_NAME = 'java-maven-app'
-    }
-    steps {
-        script {
-            sh 'envsubst < kubernetes/deployment.yaml | kubectl apply -f -'
-            sh 'envsubst < kubernetes/service.yaml | kubectl apply -f -'
+            environment {
+                AWS_ACCESS_KEY_ID = credentials('jenkins-aws-access-key-id')
+                AWS_SECRET_ACCESS_KEY = credentials('jenkins-aws-secret-access-key')
+                AWS_DEFAULT_REGION = 'ap-south-1' 
+                APP_NAME = 'java-maven-app'
+            }
+            steps {
+                script {
+                    
+                    sh "export IMAGE_NAME=${DOCKER_REPO}:${IMAGE_NAME} && envsubst < kubernetes/deployment.yaml | kubectl apply -f -"
+                    sh "envsubst < kubernetes/service.yaml | kubectl apply -f -"
+                }
+            }
         }
     }
-}
-     }
 }
