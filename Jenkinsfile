@@ -13,7 +13,9 @@ pipeline {
         maven 'maven-3.9'
     }
     environment {
-        IMAGE_NAME = 'shrey7781/demo-app:java-maven-3.0'
+        DOCKER_REPO_SERVER = '699966192901.dkr.ecr.ap-south-1.amazonaws.com'
+        IMAGE_NAME = 'java-maven-3.0'
+        DOCKER_REPO = '${DOCKER_REPO_SERVER}/java-maven-app'
     }
     stages {
         stage('build app') {
@@ -25,14 +27,18 @@ pipeline {
             }
         }
         stage('build image') {
-            steps {
-                script {
-                   echo 'building docker image...'
-                   buildImage(env.IMAGE_NAME)
-                   dockerLogin()
-                   dockerPush(env.IMAGE_NAME)
+            steps echo "building docker image..."
+                withCredentials([usernamePassword(
+                    credentialsId: 'ecr-credentials',
+                    usernameVariable: 'USER',
+                    passwordVariable: 'PASS'
+                )]) {
+                    sh """
+                    docker build -t ${DOCKER_REPO}:${IMAGE_NAME} .
+                    echo \$PASS | docker login -u \$USER --password-stdin ${DOCKER_REPO_SERVER}
+                    docker push ${DOCKER_REPO}:${IMAGE_NAME}
+                    """
                 }
-            }
         }
         stage('deploy') {
     environment {
